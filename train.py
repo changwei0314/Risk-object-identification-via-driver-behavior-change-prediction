@@ -33,12 +33,12 @@ if __name__ == '__main__':
     parser.add_argument('--debug', action='store_true')
     parser.add_argument('--inputs', default='camera', type=str)
     parser.add_argument('--cause', default='interactive', type=str)
-    parser.add_argument('--gpu', default='0, 1', type=str)
+    parser.add_argument('--gpu', default='0', type=str)
     parser.add_argument('--epochs', default=20, type=int)
-    parser.add_argument('--batch_size', default=2, type=int)
+    parser.add_argument('--batch_size', default=4, type=int)
     parser.add_argument('--lr', default=1e-07, type=float)  
     parser.add_argument('--weight_decay', default=5e-04, type=float)
-    parser.add_argument('--num_workers', default=2, type=int)
+    parser.add_argument('--num_workers', default=8, type=int)
     parser.add_argument('--time_steps', default=3, type=int)
     parser.add_argument('--partial_conv', default=True, type=bool)  # True
     parser.add_argument('--data_augmentation', default=True, type=bool)
@@ -120,6 +120,8 @@ for epoch in range(1, args.epochs+1):
             batch_size=args.batch_size,
             shuffle=True,
             num_workers=args.num_workers,
+            pin_memory=True,
+            prefetch_factor=2
         )
         for phase in args.phases
     }
@@ -154,12 +156,20 @@ for epoch in range(1, args.epochs+1):
                     vel_target = to_device(vel_target, device).view(-1)  # (bs)
 
                     vel = model(camera_inputs, trackers, device)
-                    
+                    # vel = torch.Tensor([[-0.1633,  0.1483],
+                    #         [ 0.1000,  0.1392],
+                    #         [-0.0277,  0.0577],
+                    #         [ 0.1522,  0.2391],
+                    #         [-0.1114, -0.0410],
+                    #         [ 0.0082,  0.1016],
+                    #         [ 0.0174,  0.0788],
+                    #         [-0.0061,  0.0778]])
+                    # vel = to_device(vel, device)
                     print(np.argmax(vel.detach().to('cpu').numpy(), axis=1))
                     print(np.array(vel_target.detach().to('cpu').numpy()))
-                    print(vel)
+                    #print(vel)
                     
-
+                    
                     vel_loss = criterion(vel, vel_target)
                     loss = vel_loss
                     print('batch idx:', batch_idx, '/', len(data_loaders[phase]), ':', loss.item())
@@ -182,6 +192,7 @@ for epoch in range(1, args.epochs+1):
                     tepoch.set_postfix(loss=loss.item())
                     # if batch_idx > 40:
                     #     break
+                    
 
     end = time.time()
 

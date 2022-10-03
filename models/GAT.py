@@ -215,6 +215,7 @@ class GATLayer(torch.nn.Module):
         # Calculate the numerator. Make logits <= 0 so that e^logit <= 1 (this will improve the numerical stability)
         scores_per_edge = scores_per_edge - scores_per_edge.max()
         exp_scores_per_edge = scores_per_edge.exp()  # softmax
+        
 
         # Calculate the denominator. shape = (E, NH)
         neigborhood_aware_denominator = self.sum_edge_scores_neighborhood_aware(
@@ -308,6 +309,7 @@ class GATLayer(torch.nn.Module):
             torch.nn.init.zeros_(self.bias)
 
     def skip_concat_bias(self, attention_coefficients, in_nodes_features, out_nodes_features):
+        
         if self.log_attention_weights:  # potentially log for later visualization in playground.py
             self.attention_weights = attention_coefficients
 

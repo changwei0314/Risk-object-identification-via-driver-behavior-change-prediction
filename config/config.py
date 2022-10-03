@@ -4,7 +4,8 @@ from collections import OrderedDict
 import socket
 import getpass
 import json
-
+import PIL.Image as Image
+import numpy as np
 
 machine_name = socket.gethostname()
 username = getpass.getuser()
@@ -35,6 +36,7 @@ def parse_args(parser):
     args.test_session_set = []
     args.train_session_set = []
 
+    
     # open scenario_list.json to choose selected scenario
     f = open('/home/william/risk-assessment-via-GAT/config/scenario_list.json')
     scenario_list = json.load(f)
@@ -50,12 +52,16 @@ def parse_args(parser):
                 continue
 
             var_scene_path = osp.join(basic_scene_path, var_scene)
-
+            
             if basic_scene[:2] == '10':
                 args.test_session_set.append(var_scene_path)
             else:
                 args.train_session_set.append(var_scene_path)
 
+
+
+
+    
     args.num_classes = len(args.class_index)
 
     return args
